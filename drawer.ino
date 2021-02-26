@@ -15,7 +15,7 @@
 #define NUM_LEDS 1
 #define DATA_PIN 5
 
-const String FirmwareVer = {"1.2"};
+const String FirmwareVer = {"1.3"};
 #define URL_fw_Version "https://raw.githubusercontent.com/Sthira-Nusantara/iot-drawer-firmware/master/version.txt"
 #define URL_fw_Bin "https://raw.githubusercontent.com/Sthira-Nusantara/iot-drawer-firmware/master/firmware.bin"
 
@@ -129,14 +129,14 @@ void FirmwareUpdate()
 
     deviceClient.setInsecure();
 
-//    deviceClient.addHeader("Authorization", "Bearer affd6c0995d4b701ce6e67b2531eb368177f3e7f");
+    //    deviceClient.addHeader("Authorization", "Bearer affd6c0995d4b701ce6e67b2531eb368177f3e7f");
 
 
     HTTPClient https;
 
     Serial.print("[HTTPS] begin...\n");
     if (https.begin(deviceClient, URL_fw_Version)) {  // HTTPS
-//      https.addHeader("Authorization", "Bearer affd6c0995d4b701ce6e67b2531eb368177f3e7f");
+      //      https.addHeader("Authorization", "Bearer affd6c0995d4b701ce6e67b2531eb368177f3e7f");
 
 
       Serial.print("[HTTPS] GET...\n");
@@ -164,10 +164,10 @@ void FirmwareUpdate()
           {
             Serial.println("New firmware detected");
 
-//            https.begin(deviceClient, URL_fw_Bin);
-//            https.addHeader("Authorization", "Bearer affd6c0995d4b701ce6e67b2531eb368177f3e7f");
-//            https.addHeader(F("Accept"), "application/vnd.github.v3+json");
-            
+            //            https.begin(deviceClient, URL_fw_Bin);
+            //            https.addHeader("Authorization", "Bearer affd6c0995d4b701ce6e67b2531eb368177f3e7f");
+            //            https.addHeader(F("Accept"), "application/vnd.github.v3+json");
+
             ESPhttpUpdate.setLedPin(LED_BUILTIN, LOW);
 
             Serial.println("Device ready to update");
@@ -195,7 +195,7 @@ void FirmwareUpdate()
         Serial.printf("[HTTPS] GET... failed, error: %s\n", https.errorToString(httpCode).c_str());
       }
 
-            https.end();
+      https.end();
     } else {
       Serial.printf("[HTTPS] Unable to connect\n");
     }
@@ -328,6 +328,14 @@ void callback(char *topic, byte *payload, unsigned int length)
   for (int i = 0; i < length; i++)
   {
     Serial.println((char)payload[i]);
+  }
+
+  if (String(topic).indexOf(testSubs) >= 0)
+  {
+    if (payload[0] == '1')
+    {
+      blinkingColor(CRGB::Blue, 3, 250);
+    }
   }
 
   if (String(topic).indexOf(toggle) >= 0)
