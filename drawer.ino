@@ -15,12 +15,12 @@
 #define NUM_LEDS 1
 #define DATA_PIN 5
 
-const String FirmwareVer = {"1.3"};
+const String FirmwareVer = {"4.0"};
 #define URL_fw_Version "https://raw.githubusercontent.com/Sthira-Nusantara/iot-drawer-firmware/master/version.txt"
 #define URL_fw_Bin "https://raw.githubusercontent.com/Sthira-Nusantara/iot-drawer-firmware/master/firmware.bin"
 
-String URL_register = "https://api.rupira.com/v2/iot/request";
-String URL_authenticate = "https://api.rupira.com/v2/iot/authenticate";
+String URL_register = "https://api.rupira.com/v1/iot/request";
+String URL_authenticate = "https://api.rupira.com/v1/iot/authenticate";
 
 
 const char *mqtt_server = "mqtt.rupira.com";
@@ -279,7 +279,16 @@ void setup_wifi()
   delay(10);
   // We start by connecting to a WiFi network
 
+  scanSSID:
   String BSSIDnetwork = scanNetwork(ssid);
+
+  if(BSSIDnetwork == "") {
+    goto scanSSID;
+  } else {
+    goto scanChan;
+  }
+
+  scanChan:
   int chan = getChannel(BSSIDnetwork);
 
   int n = BSSIDnetwork.length();
