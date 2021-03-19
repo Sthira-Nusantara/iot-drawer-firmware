@@ -15,7 +15,7 @@
 #define NUM_LEDS 1
 #define DATA_PIN 5
 
-const String FirmwareVer = {"4.0"};
+const String FirmwareVer = {"4.1"};
 #define URL_fw_Version "https://raw.githubusercontent.com/Sthira-Nusantara/iot-drawer-firmware/master/version.txt"
 #define URL_fw_Bin "https://raw.githubusercontent.com/Sthira-Nusantara/iot-drawer-firmware/master/firmware.bin"
 
@@ -285,11 +285,11 @@ void setup_wifi()
   if(BSSIDnetwork == "") {
     goto scanSSID;
   } else {
-    goto scanChan;
+//    goto scanChan;
   }
 
-  scanChan:
-  int chan = getChannel(BSSIDnetwork);
+//  scanChan:
+//  int chan = getChannel(BSSIDnetwork);
 
   int n = BSSIDnetwork.length();
 
@@ -305,13 +305,13 @@ void setup_wifi()
   Serial.println();
   Serial.print("Connecting to ");
   Serial.println(ssid);
-  Serial.print("Connecting to BSSID ");
-  Serial.println(BSSIDnetwork);
-  Serial.print("Connecting to Channel ");
-  Serial.println(chan);
+//  Serial.print("Connecting to BSSID ");
+//  Serial.println(BSSIDnetwork);
+//  Serial.print("Connecting to Channel ");
+//  Serial.println(chan);
 
-  WiFi.begin(ssid, password, chan, bssid);
-
+//  WiFi.begin(ssid, password, chan, bssid);
+WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED)
   {
     delay(500);
@@ -461,6 +461,8 @@ void setup()
 {
 
   Serial.begin(115200);
+
+  delay(100);
 
   Serial.println("");
   Serial.println("");
