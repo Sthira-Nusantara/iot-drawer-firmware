@@ -15,7 +15,7 @@
 #define NUM_LEDS 1
 #define DATA_PIN 5
 
-const String FirmwareVer = {"4.1"};
+const String FirmwareVer = {"4.2"};
 #define URL_fw_Version "https://raw.githubusercontent.com/Sthira-Nusantara/iot-drawer-firmware/master/version.txt"
 #define URL_fw_Bin "https://raw.githubusercontent.com/Sthira-Nusantara/iot-drawer-firmware/master/firmware.bin"
 
@@ -279,17 +279,17 @@ void setup_wifi()
   delay(10);
   // We start by connecting to a WiFi network
 
-  scanSSID:
+scanSSID:
   String BSSIDnetwork = scanNetwork(ssid);
 
-  if(BSSIDnetwork == "") {
+  if (BSSIDnetwork == "") {
     goto scanSSID;
   } else {
-//    goto scanChan;
+    //    goto scanChan;
   }
 
-//  scanChan:
-//  int chan = getChannel(BSSIDnetwork);
+  //  scanChan:
+  //  int chan = getChannel(BSSIDnetwork);
 
   int n = BSSIDnetwork.length();
 
@@ -305,19 +305,19 @@ void setup_wifi()
   Serial.println();
   Serial.print("Connecting to ");
   Serial.println(ssid);
-//  Serial.print("Connecting to BSSID ");
-//  Serial.println(BSSIDnetwork);
-//  Serial.print("Connecting to Channel ");
-//  Serial.println(chan);
+  //  Serial.print("Connecting to BSSID ");
+  //  Serial.println(BSSIDnetwork);
+  //  Serial.print("Connecting to Channel ");
+  //  Serial.println(chan);
 
-//  WiFi.begin(ssid, password, chan, bssid);
-WiFi.begin(ssid, password);
+  //  WiFi.begin(ssid, password, chan, bssid);
+  WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED)
   {
-    delay(500);
+    delay(250);
     changeColor(CRGB::Red);
     Serial.print(".");
-    delay(500);
+    delay(250);
     changeColor(CRGB::Black);
   }
 
@@ -347,76 +347,38 @@ void callback(char *topic, byte *payload, unsigned int length)
     }
   }
 
-  if (String(topic).indexOf(toggle) >= 0)
+  if (String(topic).indexOf(successSubs) >= 0)
   {
     if (payload[0] == '1')
     {
-      deviceClient.setInsecure();
-      HTTPClient https;
+      digitalWrite(RELAY, LOW);
+      Serial.println("Door Open");
+      changeColor(CRGB::Green);
 
-      https.begin(deviceClient, URL_authenticate.c_str()); //HTTP
-      https.addHeader("Content-Type", "application/json");
+      delay(5000);
 
-      Serial.println("Authenticating...");
-      int httpCode = https.POST("{\"request\": \"" + String(topic) + "\"}");
+      // Close Door
+      digitalWrite(RELAY, HIGH);
+      Serial.println("Door Close");
+      changeColor(CRGB::Red);
 
-      if (httpCode > 0) {
-        // HTTP header has been send and Server response header has been handled
-        Serial.printf("[HTTP] POST... code: %d\n", httpCode);
-
-        // file found at server
-        if (httpCode == HTTP_CODE_OK)
-        {
-          const String& payload = https.getString();
-          Serial.println("received payload:\n<<");
-          Serial.println(payload);
-          Serial.println(">>");
-
-
-          DynamicJsonDocument doc(1024);
-
-          deserializeJson(doc, payload);
-
-          const char* hasil = doc["data"];
-
-          if (String(hasil) == "true")
-          {
-            // Open Door
-            digitalWrite(RELAY, LOW);
-            Serial.println("Door Open");
-            changeColor(CRGB::Green);
-
-            delay(5000);
-
-            // Close Door
-            digitalWrite(RELAY, HIGH);
-            Serial.println("Door Close");
-            changeColor(CRGB::Red);
-
-            delay(1000);
-          }
-        }
-        else
-        {
-          const String& payload = https.getString();
-          Serial.println("error payload:\n<<");
-          Serial.println(payload);
-          Serial.println(">>");
-
-          Serial.println("Sorry, you are not authenticated");
-
-          blinkingColor(CRGB::Red, 3, 250);
-
-          delay(1000);
-
-        }
-      } else {
-        Serial.printf("[HTTP] POST... failed, error: %s\n", https.errorToString(httpCode).c_str());
-      }
-
-      //      https.end();
+      delay(1000);
     }
   }
+
+  if (String(topic).indexOf(failureSubs) >= 0)
+  {
+    if (payload[0] == '1')
+    {
+      Serial.println("Sorry, you are not authenticated");
+
+      blinkingColor(CRGB::Red, 3, 250);
+
+      delay(1000);
+    }
+  }
+
+
 
   Serial.println();
   //  return;
@@ -440,7 +402,7 @@ boolean reconnect()
     //      Your Subs
     mqttClient.subscribe(successSubs.c_str());
     mqttClient.subscribe(failureSubs.c_str());
-    mqttClient.subscribe(openSubs.c_str());
+    //    mqttClient.subscribe(openSubs.c_str());
     mqttClient.subscribe(testSubs.c_str());
     digitalWrite(RELAY, HIGH);
   }
@@ -477,6 +439,7 @@ void setup()
   Serial.print("Current Firmware Version: ");
   Serial.println(FirmwareVer);
 
+
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
 
   pinMode(RELAY, OUTPUT);
@@ -510,6 +473,10 @@ void setup()
   mqttClient.setServer(mqtt_server, 1883);
   mqttClient.setCallback(callback);
   timeClient.begin();
+  
+  Serial.println(MacAdd);
+
+  
 }
 
 void loop()
